@@ -1,48 +1,46 @@
 # -*- coding: utf-8 -*-
 import telebot
+import threading
+import os
 import io
 import hashlib
-import time
-import threading
 from flask import Flask
 
-# --- [إعدادات الخادم] ---
+# --- [ الإعدادات الأساسية ] ---
 TOKEN = '8617254929:AAGtY99XlCktp62gdPkWz7aNonDuvrLWjZc'
-
-# الرابط الجديد الذي طلبته
-MY_DASHBOARD_URL = "https://your-private-dashboard.com/" 
-
-bot = telebot.TeleBot(TOKEN, threaded=True)
+bot = telebot.TeleBot(TOKEN)
+app = Flask(__name__)
 user_data = {}
 
-# --- [سيرفر الويب للوحة التحكم] ---
-app = Flask(__name__)
-@app.route('/')
-def index():
-    try:
-        # سيقوم السيرفر بعرض ملف index.html الموجود في مستودعك
-        return open("index.html", "r", encoding="utf-8").read()
-    except:
-        return "Titan Server Dashboard is Online."
-
-def run_web():
-    # منفذ 10000 متوافق مع Render
-    app.run(host='0.0.0.0', port=10000)
-
-# --- [محرك التشفير] ---
-class TitanUltimateEngine:
+# --- [ محرك التشفير الخارق - Titan Engine ] ---
+class TitanHyperEngine:
     @staticmethod
     def hyper_crypt(mod_bytes, header):
         magic_unity = b"UnityFS\x00\x00\x00\x00\x07"
-        # حقن البصمة الأصلية مع البيانات المعدلة
+        # دمج الهيدر الأصلي مع البيانات المعدلة لضمان التوافق
         return magic_unity + header + mod_bytes
 
-# --- [الواجهات] ---
-def main_keyboard():
+# --- [ سيرفر لوحة التحكم ] ---
+@app.route('/')
+def home():
+    try:
+        # قراءة ملف index.html وعرضه كواجهة للموقع
+        with open("index.html", "r", encoding="utf-8") as f:
+            return f.read()
+    except FileNotFoundError:
+        return "<h1 style='color:green;text-align:center;font-family:monospace;'>Titan Server is Active & Running!</h1>"
+
+def run_web():
+    # الحصول على المنفذ تلقائياً من Render (بشكل أساسي 10000)
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host='0.0.0.0', port=port)
+
+# --- [ واجهات الأزرار ] ---
+def main_keyboard(dashboard_url):
     m = telebot.types.InlineKeyboardMarkup(row_width=1)
     m.add(
         telebot.types.InlineKeyboardButton("🚀 تشفير Hyper Bypass", callback_data="start_path"),
-        telebot.types.InlineKeyboardButton("🌐 فتح لوحة تحكم خادمي", url=MY_DASHBOARD_URL)
+        telebot.types.InlineKeyboardButton("🌐 فتح لوحة التحكم الخارقة", url=dashboard_url)
     )
     return m
 
@@ -51,14 +49,19 @@ def back_home_btn():
     m.add(telebot.types.InlineKeyboardButton("🔙 العودة للقائمة الرئيسية", callback_data="home"))
     return m
 
-# --- [المعالجة] ---
+# --- [ أوامر ومعالجة البوت ] ---
 @bot.message_handler(commands=['start'])
 def start(message):
-    bot.send_message(
-        message.chat.id, 
-        "⚡️ **Titan Hyper Cloud Ready**\nخادمك الخاص متصل الآن ويعمل بكفاءة.",
-        reply_markup=main_keyboard()
+    # ملاحظة: ضع رابط Render الخاص بك هنا ليعمل الزر بشكل صحيح
+    dashboard_url = "https://your-app-name.onrender.com" 
+    
+    msg = (
+        "⚡️ **Titan Hyper Cloud v4.0**\n"
+        "تم الاتصال بالخادم بنجاح.\n\n"
+        "📍 الحالة: متصل (Live)\n"
+        "⚙️ المحرك: Bypass iOS Ready"
     )
+    bot.send_message(message.chat.id, msg, reply_markup=main_keyboard(dashboard_url), parse_mode="Markdown")
 
 @bot.callback_query_handler(func=lambda call: True)
 def handle_queries(call):
@@ -68,7 +71,7 @@ def handle_queries(call):
         bot.edit_message_text("1️⃣ أرسل ملف الـ **3D الأصلي** لجلب الهيدر:", chat_id, call.message.message_id)
     elif call.data == "home":
         user_data.pop(chat_id, None)
-        bot.edit_message_text("🛠 **قائمة التحكم الرئيسية**", chat_id, call.message.message_id, reply_markup=main_keyboard())
+        bot.edit_message_text("🛠 **قائمة التحكم الرئيسية**", chat_id, call.message.message_id, reply_markup=main_keyboard("https://your-app-name.onrender.com"))
 
 @bot.message_handler(content_types=['document', 'text'])
 def workflow(message):
@@ -85,30 +88,4 @@ def workflow(message):
             bot.reply_to(message, "✅ تم جلب الهيدر بنجاح.\n2️⃣ أرسل الآن ملف **CodeResources**:")
         
         elif state['step'] == 'res':
-            state['step'] = 'ver'
-            bot.reply_to(message, "3️⃣ أرسل رقم التحديث (مثل OB53):")
-
-        elif state['step'] == 'mod':
-            status = bot.reply_to(message, "⚙️ جاري معالجة الملف في السيرفر وتطبيق التشفير...")
-            final = TitanUltimateEngine.hyper_crypt(file_bytes, state['header'])
-            
-            out = io.BytesIO(final)
-            out.name = f"Titan_Crypted_{message.document.file_name}"
-            
-            # إرسال الملف المشفر
-            bot.send_document(chat_id, out, caption="✅ **تم التشفير بنجاح!**\nالملف جاهز للاستبدال في مسار اللعبة.")
-            
-            # إرسال رسالة العودة للقائمة تلقائياً
-            bot.send_message(chat_id, "✨ العملية اكتملت. هل تود القيام بعملية أخرى؟", reply_markup=back_home_btn())
-            del user_data[chat_id]
-
-    elif message.content_type == 'text' and state['step'] == 'ver':
-        state['step'] = 'mod'
-        bot.reply_to(message, "4️⃣ أرسل الآن **الملف المعدل** للحقن النهائي:")
-
-# --- [التشغيل] ---
-if __name__ == "__main__":
-    # تشغيل واجهة الويب في الخلفية لتفادي تعليق البوت
-    threading.Thread(target=run_web, daemon=True).start()
-    print("🚀 Server & Dashboard (URL Updated) are Online!")
-    bot.infinity_polling()
+            state['step'] =
