@@ -53,7 +53,7 @@ def back_home_btn():
 @bot.message_handler(commands=['start'])
 def start(message):
     # ملاحظة: ضع رابط Render الخاص بك هنا ليعمل الزر بشكل صحيح
-    dashboard_url = "https://your-app-name.onrender.com" 
+    dashboard_url = "https://abdo-ai.onrender.com" 
     
     msg = (
         "⚡️ **Titan Hyper Cloud v4.0**\n"
