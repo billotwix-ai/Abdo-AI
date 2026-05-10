@@ -3,39 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Titan Hyper Server | لوحة التحكم</title>
+    <title>ABDO TOP1 | Dashboard</title>
     <style>
-        :root { --primary: #00ff41; --bg: #0a0a0a; --panel: #1a1a1a; }
-        body { background-color: var(--bg); color: white; font-family: 'Courier New', monospace; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .dashboard { background: var(--panel); border: 1px solid var(--primary); border-radius: 10px; padding: 25px; width: 100%; max-width: 600px; box-shadow: 0 0 20px rgba(0, 255, 65, 0.2); }
-        h1 { color: var(--primary); text-transform: uppercase; letter-spacing: 2px; font-size: 24px; margin-bottom: 10px; border-bottom: 1px solid var(--primary); padding-bottom: 10px; }
-        .status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0; }
-        .stat { background: #000; padding: 10px; border-radius: 5px; border-right: 3px solid var(--primary); }
-        .stat label { display: block; font-size: 10px; color: #888; text-transform: uppercase; }
-        .stat span { font-size: 14px; font-weight: bold; }
-        .terminal { background: black; color: var(--primary); padding: 15px; border-radius: 5px; height: 150px; overflow-y: auto; font-size: 12px; line-height: 1.5; margin-bottom: 20px; border: 1px solid #333; }
-        .btn { display: block; width: 100%; background: var(--primary); color: black; text-align: center; padding: 12px; border-radius: 5px; text-decoration: none; font-weight: bold; transition: 0.3s; }
-        .btn:hover { background: #00cc33; box-shadow: 0 0 15px var(--primary); }
-        .blink { animation: blinker 1.5s linear infinite; }
-        @keyframes blinker { 50% { opacity: 0; } }
+        :root {
+            --glow-color: #00ff41;
+            --bg-color: #050505;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        /* حاوية اللوحة العائمة */
+        .dashboard-card {
+            background: rgba(26, 26, 26, 0.9);
+            border: 2px solid var(--glow-color);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.3), inset 0 0 15px rgba(0, 255, 65, 0.1);
+            backdrop-filter: blur(10px);
+            animation: float 4s ease-in-out infinite; /* تأثير الطفو */
+            max-width: 400px;
+            width: 90%;
+        }
+
+        /* اسمك المتوهج */
+        h1 {
+            color: var(--glow-color);
+            font-size: 35px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px var(--glow-color), 0 0 20px var(--glow-color);
+            letter-spacing: 3px;
+        }
+
+        .status-text {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 25px;
+            font-family: 'Courier New', monospace;
+        }
+
+        /* الأزرار المتوهجة */
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            border: 1px solid var(--glow-color);
+            color: var(--glow-color);
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: bold;
+            transition: 0.4s;
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.2);
+            margin: 5px;
+        }
+
+        .btn:hover {
+            background: var(--glow-color);
+            color: black;
+            box-shadow: 0 0 25px var(--glow-color);
+            transform: scale(1.05);
+        }
+
+        /* تأثير الحركة العائمة */
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        /* الدوائر المتوهجة في الخلفية */
+        .bg-glow {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(0, 255, 65, 0.1) 0%, transparent 70%);
+            z-index: -1;
+            filter: blur(50px);
+            animation: pulse 6s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.2); }
+        }
     </style>
 </head>
 <body>
-    <div class="dashboard">
-        <h1>TITAN HYPER CLOUD <span class="blink">_</span></h1>
-        <div class="status-grid">
-            <div class="stat"><label>Server Status</label><span style="color:var(--primary)">ACTIVE (ONLINE)</span></div>
-            <div class="stat"><label>Uptime</label><span>99.9% 24/7</span></div>
-            <div class="stat"><label>Location</label><span>TIMOKTEN, DZ</span></div>
-            <div class="stat"><label>Engine</label><span>BYPASS OB53 v4.0</span></div>
+    <div class="bg-glow"></div>
+    
+    <div class="dashboard-card">
+        <h1>ABDO TOP1</h1>
+        <div class="status-text">
+            [ SERVER STATUS: ONLINE ]<br>
+            [ HYPER ENGINE ACTIVE ]
         </div>
-        <div class="terminal" id="logs">
-            [SYS] Booting Titan Server Engine...<br>
-            [SYS] Connection established with Bot-Hosting.net<br>
-            [INFO] Path Signature: /var/mobile/Containers/...<br>
-            [READY] Waiting for user input via Telegram...<br>
-        </div>
-        <a href="https://t.me/8617254929" class="btn">إدارة البوت عبر تلجرام</a>
+        
+        <p style="color: #fff; font-size: 13px;">مرحباً بك في لوحة تحكم خادمك الشخصي. الخادم الآن يعمل على الرابط الرسمي.</p>
+        
+        <a href="https://t.me/8617254929" class="btn">تواصل مع البوت</a>
+        <a href="https://abdo-ai.onrender.com/" class="btn">تحديث اللوحة</a>
     </div>
+
 </body>
 </html>
