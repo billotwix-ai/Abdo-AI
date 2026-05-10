@@ -23,20 +23,19 @@ user_data = {}
 class EncryptionModule:
     @staticmethod
     def extract_3d_signature(sig_bytes):
-        """يستخرج بصمة الـ 3D من ملف CodeSignature"""
+        # البحث عن بصمة الـ 3D داخل ملف التوقيع
         match = re.search(rb'.{10,64}\x33\x44', sig_bytes)
         return match.group() if match else sig_bytes[:64]
 
     @staticmethod
     def apply_bypass(mod_bytes, sig_data, header):
-        """حقن التشفير ومنع برامج Asset Bundle من الفتح"""
         magic = b"UnityFS\x00\x00\x00\x00\x07"
-        # بايتات تشويش لكسر برامج الاستخراج الخارجية
-        obfuscation = b"\x00\xff\x00\xff" 
+        # بايتات تشويش لمنع برامج Asset Studio من التعرف على الملف
+        obfuscation = b"\x00\xff\x00\xff\xaa\xbb" 
         return magic + sig_data + header + obfuscation + mod_bytes
 
 # ==========================================
-# 3. كلاس محرك IDA Pro (Analysis Only)
+# 3. كلاس محرك IDA Pro (التحليل المستقل)
 # ==========================================
 class IDAModule:
     @staticmethod
@@ -63,16 +62,20 @@ class IDAModule:
         return "\n".join(results)
 
 # ==========================================
-# 4. كلاس واجهات الأزرار (Keyboards)
+# 4. كلاس واجهات الأزرار (مثل الصور تماماً)
 # ==========================================
 class InterfaceModule:
     @staticmethod
     def main_menu():
         m = telebot.types.InlineKeyboardMarkup(row_width=1)
         m.add(
-            telebot.types.InlineKeyboardButton("🚀 تشفير Signature Bypass", callback_data="btn_crypt"),
-            telebot.types.InlineKeyboardButton("🛠 IDA Pro Menu", callback_data="btn_ida"),
-            telebot.types.InlineKeyboardButton("🌐 لوحة التحكم", url=DASHBOARD_URL)
+            telebot.types.InlineKeyboardButton("🚀 صنع بوت خاص بك", callback_data="make_bot"),
+            telebot.types.InlineKeyboardButton("🔓 فك حظر تليجرام", callback_data="unban_tele"),
+            telebot.types.InlineKeyboardButton("🇰🇷 فك حظر كروبات", callback_data="unban_group"),
+            telebot.types.InlineKeyboardButton("🛠 تشفير Signature Bypass", callback_data="btn_crypt"),
+            telebot.types.InlineKeyboardButton("💎 خصائص IDA Pro", callback_data="btn_ida"),
+            telebot.types.InlineKeyboardButton("📢 قناة الدمري واتساب", url="https://whatsapp.com/channel/your_link"),
+            telebot.types.InlineKeyboardButton("⛩ انستجرام", url="https://instagram.com/your_link")
         )
         return m
 
@@ -80,10 +83,10 @@ class InterfaceModule:
     def ida_menu():
         m = telebot.types.InlineKeyboardMarkup(row_width=1)
         m.add(
-            telebot.types.InlineKeyboardButton("🔓 فك الملفات (Unpack)", callback_data="ida_unpack"),
-            telebot.types.InlineKeyboardButton("📊 أوفستات عامة", callback_data="ida_general"),
-            telebot.types.InlineKeyboardButton("💎 أوفستات قوية (Strong)", callback_data="ida_strong"),
-            telebot.types.InlineKeyboardButton("⬅️ رجوع", callback_data="btn_main")
+            telebot.types.InlineKeyboardButton("🔓 Unpack (فك الملفات)", callback_data="ida_unpack"),
+            telebot.types.InlineKeyboardButton("📊 الأوفستات العامة", callback_data="ida_general"),
+            telebot.types.InlineKeyboardButton("💎 الأوفستات القوية (VIP)", callback_data="ida_strong"),
+            telebot.types.InlineKeyboardButton("⬅️ العودة للقائمة الرئيسية", callback_data="btn_main")
         )
         return m
 
@@ -92,27 +95,43 @@ class InterfaceModule:
 # ==========================================
 @bot.message_handler(commands=['start'])
 def welcome(message):
-    bot.send_message(message.chat.id, "⚡️ **ABDO TOP1 Engine**\nالنظام مفصل ومنظم الآن لتسهيل التعديل.", 
+    welcome_msg = (
+        "⚡️ **مرحباً بك في نظام ABDO TOP1 v6.0**\n"
+        "تم تحديث المحركات لتشمل Bypass 3D و IDA Pro المطور.\n\n"
+        "اختر المهمة المطلوبة من الأزرار أدناه:"
+    )
+    bot.send_message(message.chat.id, welcome_msg, 
                      reply_markup=InterfaceModule.main_menu(), parse_mode="Markdown")
 
 @bot.callback_query_handler(func=lambda call: True)
 def handle_clicks(call):
     chat_id = call.message.chat.id
-    if call.data == "btn_crypt":
-        user_data[chat_id] = {'mode': 'crypt', 'step': 'original'}
-        bot.send_message(chat_id, "1️⃣ أرسل **الملف الأصلي**:")
     
-    elif call.data == "btn_ida":
-        bot.edit_message_text("🛠 اختر أداة تحليل IDA:", chat_id, call.message.message_id, 
-                              reply_markup=InterfaceModule.ida_keyboard())
+    # قائمة IDA Pro
+    if call.data == "btn_ida":
+        bot.edit_message_text("🛠 **قائمة خصائص IDA Pro المتقدمة**\nاختر نوع التحليل المطلوب:", 
+                              chat_id, call.message.message_id, 
+                              reply_markup=InterfaceModule.ida_menu(), parse_mode="Markdown")
     
+    # القائمة الرئيسية
     elif call.data == "btn_main":
-        bot.edit_message_text("⚡️ القائمة الرئيسية:", chat_id, call.message.message_id, 
-                              reply_markup=InterfaceModule.main_menu())
-    
+        bot.edit_message_text("⚡️ **القائمة الرئيسية**\nاختر الوظيفة:", 
+                              chat_id, call.message.message_id, 
+                              reply_markup=InterfaceModule.main_menu(), parse_mode="Markdown")
+
+    # بدء التشفير (3 خطوات)
+    elif call.data == "btn_crypt":
+        user_data[chat_id] = {'mode': 'crypt', 'step': 'original'}
+        bot.send_message(chat_id, "1️⃣ أرسل **الملف الأصلي** لسحب الهيدر:")
+
+    # أوامر أخرى (رسائل وهمية للأزرار الإضافية)
+    elif call.data in ["make_bot", "unban_tele", "unban_group"]:
+        bot.answer_callback_query(call.id, "هذه الميزة ستكون متاحة قريباً في التحديث القادم!", show_alert=True)
+
+    # تفعيل أوضاع IDA
     elif call.data.startswith("ida_"):
         user_data[chat_id] = {'mode': call.data}
-        bot.send_message(chat_id, f"📥 أرسل الملف للتحليل عبر {call.data}:")
+        bot.send_message(chat_id, f"📥 أرسل الملف الآن للبدء في عملية الـ {call.data.replace('ida_', '')}:")
 
 @bot.message_handler(content_types=['document'])
 def process_files(message):
@@ -122,34 +141,34 @@ def process_files(message):
     state = user_data[chat_id]
     file_bytes = bot.download_file(bot.get_file(message.document.file_id).file_path)
 
-    # --- [ كود زر التشفير ] ---
+    # --- [ مسار التشفير الثلاثي ] ---
     if state.get('mode') == 'crypt':
         if state['step'] == 'original':
             state.update({'header': file_bytes[:32], 'step': 'sig'})
-            bot.reply_to(message, "✅ استلمت الأصلي.\n2️⃣ أرسل الآن ملف **_CodeSignature**:")
+            bot.reply_to(message, "✅ تم سحب الهيدر.\n2️⃣ أرسل الآن ملف **_CodeSignature** لاستخراج بصمة الـ 3D:")
         
         elif state['step'] == 'sig':
             state.update({'sig_data': EncryptionModule.extract_3d_signature(file_bytes), 'step': 'mod'})
-            bot.reply_to(message, "✅ تم استخراج بصمة 3D.\n3️⃣ أرسل الآن **الملف المعدل** للتشفير النهائي:")
+            bot.reply_to(message, "✅ تم استخراج البصمة بنجاح.\n3️⃣ أرسل الآن **الملف المعدل** للتشفير النهائي:")
             
         elif state['step'] == 'mod':
-            bot.reply_to(message, "⚙️ جاري التشفير والحماية...")
+            bot.reply_to(message, "⚙️ جاري التشفير ومنع أدوات الاستخراج...")
             final = EncryptionModule.apply_bypass(file_bytes, state['sig_data'], state['header'])
-            out = io.BytesIO(final); out.name = f"Crypt_{message.document.file_name}"
-            bot.send_document(chat_id, out, caption="✅ تم التشفير بنجاح (محمي من الاستخراج).")
+            out = io.BytesIO(final); out.name = f"Crypt_ABDO_{message.document.file_name}"
+            bot.send_document(chat_id, out, caption="✅ **تم التشفير بنجاح!**\nتم التخطي ومنع فتح الملف عبر Asset Studio.")
             del user_data[chat_id]
 
-    # --- [ كود زر IDA Pro ] ---
+    # --- [ مسار IDA Pro ] ---
     elif "ida" in state.get('mode'):
         mode = state.get('mode')
-        bot.reply_to(message, "⚙️ IDA Analysis in progress...")
+        bot.reply_to(message, "⚙️ جاري تحليل الملف عبر محرك IDA...")
         
         if "unpack" in mode: report = IDAModule.run_unpack(file_bytes)
         elif "general" in mode: report = IDAModule.get_general_offsets(file_bytes)
         else: report = IDAModule.get_strong_offsets(file_bytes)
         
-        res_file = io.BytesIO(report.encode()); res_file.name = f"{mode}_report.txt"
-        bot.send_document(chat_id, res_file, caption=f"✅ اكتمل تحليل {mode}")
+        res_file = io.BytesIO(report.encode()); res_file.name = f"IDA_Report_{mode}.txt"
+        bot.send_document(chat_id, res_file, caption=f"✅ اكتمل تحليل IDA بنجاح.")
         del user_data[chat_id]
 
 # ==========================================
@@ -159,5 +178,7 @@ def process_files(message):
 def home(): return "Abdo-AI Organized Server LIVE 🚀"
 
 if __name__ == "__main__":
+    # تشغيل Flask في خيط منفصل لبيئة Render/Heroku
     threading.Thread(target=lambda: app.run(host='0.0.0.0', port=10000), daemon=True).start()
+    print("🚀 البوت يعمل الآن بنفس واجهة الصور...")
     bot.infinity_polling()
