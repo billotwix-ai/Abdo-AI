@@ -3,153 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ABDO TOP1 | Dynamic System</title>
+    <title>ABDO TOP1 | Verified System</title>
     <style>
-        :root { --spacing: 1.05mm; }
-
-        body {
-            margin: 0;
-            background: #000;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            font-family: 'Segoe UI', Tahoma, sans-serif;
-        }
-
+        body { margin: 0; background: #000; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; font-family: 'Segoe UI', sans-serif; }
         canvas { position: absolute; top: 0; left: 0; z-index: -1; }
 
         .card {
-            background: rgba(5, 5, 5, 0.9);
-            border: 1px solid rgba(0, 255, 65, 0.3);
-            padding: 35px;
-            border-radius: 25px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #00ff41;
+            padding: 30px;
+            border-radius: 20px;
             text-align: center;
-            box-shadow: 0 0 40px rgba(0, 255, 65, 0.1);
             width: 320px;
-            backdrop-filter: blur(15px);
-            z-index: 10;
+            backdrop-filter: blur(10px);
         }
 
-        /* توهج الاسم: انتقال سلس وبطيء بين الأخضر والأزرق والألوان الأساسية */
+        /* توهج سلس وبطيء بين الأخضر والأزرق */
         .wave-name {
-            font-size: 26px;
+            font-size: 28px;
             font-weight: 900;
-            white-space: nowrap;
             display: block;
-            margin-bottom: 30px;
-            animation: waveMotion 3s ease-in-out infinite, smoothGlow 4s linear infinite;
-            text-shadow: 0 0 20px currentColor;
-        }
-
-        @keyframes waveMotion {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
+            margin-bottom: 25px;
+            animation: smoothGlow 6s linear infinite;
+            text-shadow: 0 0 15px currentColor;
         }
 
         @keyframes smoothGlow {
-            0% { color: #00ff41; }      /* أخضر فاتح */
-            25% { color: #0080ff; }     /* أزرق فاتح */
-            50% { color: #000080; }     /* أزرق غامق */
-            75% { color: #004d1a; }     /* أخضر غامق */
-            100% { color: #00ff41; }    /* العودة للأخضر */
+            0% { color: #00ff41; }   /* أخضر فاتح */
+            33% { color: #0080ff; }  /* أزرق */
+            66% { color: #004d1a; }  /* أخضر غامق */
+            100% { color: #00ff41; }
         }
 
         .btn {
             display: block;
             padding: 14px;
-            margin: var(--spacing);
+            margin: 10px 0;
             border: 1px solid #00ff41;
             color: #00ff41;
             text-decoration: none;
-            border-radius: 12px;
+            border-radius: 10px;
             font-weight: bold;
-            font-size: 13px;
-            transition: 0.4s;
-            background: rgba(0, 255, 65, 0.02);
-            text-transform: uppercase;
+            transition: 0.3s;
         }
 
-        .btn:hover { background: #00ff41; color: #000; box-shadow: 0 0 30px #00ff41; }
+        .btn:hover { background: #00ff41; color: #000; box-shadow: 0 0 20px #00ff41; }
+        .tiktok { border-color: #ff0050; color: #ff0050; }
 
-        .tiktok-style { border-color: #ff0050; color: #ff0050; }
-        .tiktok-style:hover { background: #ff0050; color: #fff; box-shadow: 0 0 30px #ff0050; }
-
-        #verify-log {
-            font-size: 11px;
-            color: #888;
-            margin-bottom: 20px;
-            min-height: 15px;
-            font-weight: bold;
-        }
-
-        #bot-access { display: none; transform: scale(0.9); transition: 0.5s; }
-        .show-bot { display: block !important; transform: scale(1) !important; }
+        #status-text { font-size: 12px; color: #666; margin-bottom: 10px; }
+        #bot-link { display: none; }
     </style>
 </head>
 <body>
-
     <canvas id="starfield"></canvas>
-
     <div class="card">
         <div class="wave-name">ABDO TOP1</div>
-        <div id="verify-log">نظام الحماية: بانتظار التحقق...</div>
+        <div id="status-text">نظام الحماية: بانتظار الإشارة...</div>
 
-        <a href="https://www.tiktok.com/@kaniki953?_r=1&_t=ZN-96Fri98ignG" 
-           target="_blank" 
-           class="btn tiktok-style" 
-           onclick="runRealVerification()">
-           اضغط للاشتراك في تيك توك
+        <a href="https://www.tiktok.com/@kaniki953" target="_blank" class="btn tiktok" onclick="checkWithPython()">
+            اضغط للاشتراك في تيك توك
         </a>
 
-        <div id="bot-access">
-            <a href="https://t.me/AllFileFFOB53bot" class="btn">تم التحقق بنجاح ✅ دخول</a>
+        <div id="bot-link">
+            <a href="https://t.me/AllFileFFOB53bot" class="btn">تم التحقق ✅ دخول البوت</a>
         </div>
     </div>
 
     <script>
-        // كود النجوم
+        // كود النجوم المتحركة (Canvas)
         const canvas = document.getElementById("starfield");
         const ctx = canvas.getContext("2d");
         let stars = [];
-        const numStars = 300;
-
-        function initStars() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            stars = [];
-            for (let i = 0; i < numStars; i++) {
-                stars.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, z: Math.random() * canvas.width, size: 1.2 });
-            }
+        function init() {
+            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+            for(let i=0; i<200; i++) stars.push({x: Math.random()*canvas.width, y: Math.random()*canvas.height, z: Math.random()*canvas.width});
         }
-
-        function drawStars() {
-            ctx.fillStyle = "black";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        function draw() {
+            ctx.fillStyle = "black"; ctx.fillRect(0,0,canvas.width,canvas.height);
             ctx.fillStyle = "white";
-            for (let i = 0; i < numStars; i++) {
-                let star = stars[i];
-                let x = (star.x - canvas.width / 2) * (canvas.width / star.z) + canvas.width / 2;
-                let y = (star.y - canvas.height / 2) * (canvas.width / star.z) + canvas.height / 2;
-                ctx.beginPath(); ctx.arc(x, y, star.size * (canvas.width / star.z), 0, Math.PI * 2); ctx.fill();
-                star.z -= 2; if (star.z <= 0) star.z = canvas.width;
-            }
-            requestAnimationFrame(drawStars);
+            stars.forEach(s => {
+                let x = (s.x - canvas.width/2) * (canvas.width/s.z) + canvas.width/2;
+                let y = (s.y - canvas.height/2) * (canvas.width/s.z) + canvas.height/2;
+                ctx.beginPath(); ctx.arc(x,y,1.2*(canvas.width/s.z),0,Math.PI*2); ctx.fill();
+                s.z -= 2; if(s.z <= 0) s.z = canvas.width;
+            });
+            requestAnimationFrame(draw);
         }
-        initStars(); drawStars();
+        init(); draw();
 
-        // وظيفة التحقق التفاعلية
-        function runRealVerification() {
-            const log = document.getElementById('verify-log');
-            const botBtn = document.getElementById('bot-access');
-            
-            log.innerHTML = "⏳ جاري فحص الاشتراك في السيرفر...";
-            log.style.color = "#ffcc00";
+        // الربط اللحظي مع البايثون
+        function checkWithPython() {
+            const status = document.getElementById('status-text');
+            status.innerHTML = "⏳ جاري الاستجابة من الأداة...";
+            status.style.color = "#00ffff";
 
-            fetch('/verify_click', { method: 'POST' })
-            .then(res => res.json())
+            // الاتصال بالسيرفر الخاص بك
+            fetch('/verify_now')
+            .then(response => response.json())
             .then(data => {
-                if(data.status === "success") {
+                if(data.status === "verified") {
+                    // في جزء من الثانية يتم التنفيذ
                     setTimeout(() => {
-                        log
+                        status.innerHTML = "تم ✅";
+                        status.style.color = "#00ff41";
+                        document.getElementById('bot-link').style.display = "block";
+                    }, 600); 
+                }
+            })
+            .catch(err => {
+                status.innerHTML = "خطأ في الاتصال بالأداة!";
+                status.style.color = "#ff0050";
+            });
+        }
+    </script>
+</body>
+</html>
