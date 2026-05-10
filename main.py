@@ -3,17 +3,18 @@ import telebot
 import threading
 import os
 import io
-import hashlib
-from flask import Flask
+from flask import Flask, request, jsonify
 
 # --- [ الإعدادات الأساسية ] ---
 TOKEN = '8617254929:AAGtY99XlCktp62gdPkWz7aNonDuvrLWjZc'
-# تم تحديث الرابط الفعلي لخادمك هنا
 DASHBOARD_URL = "https://abdo-ai.onrender.com/" 
 
 bot = telebot.TeleBot(TOKEN)
 app = Flask(__name__)
 user_data = {}
+
+# قاعدة بيانات مؤقتة لتسجيل الـ IP الذين أتموا التحقق
+verified_ips = set()
 
 # --- [ محرك التشفير الخارق - Titan Engine ] ---
 class TitanHyperEngine:
@@ -23,18 +24,26 @@ class TitanHyperEngine:
         magic_unity = b"UnityFS\x00\x00\x00\x00\x07"
         return magic_unity + header + mod_bytes
 
-# --- [ سيرفر لوحة التحكم ] ---
+# --- [ سيرفر لوحة التحكم والتحقق الذكي ] ---
 @app.route('/')
 def home():
     try:
-        # عرض ملف index.html الخاص بك
         with open("index.html", "r", encoding="utf-8") as f:
             return f.read()
     except FileNotFoundError:
-        return "<h1 style='color:#00ff41;background-color:#000;text-align:center;padding:50px;font-family:monospace;'>Abdo-AI Server is LIVE 🚀</h1>"
+        return "<h1 style='color:#00ff41;background-color:#000;text-align:center;padding:50px;'>Abdo-AI Server is LIVE 🚀</h1>"
+
+# الربط مع الـ HTML: استقبال طلب التحقق وإرجاع النتيجة
+@app.route('/verify_click', methods=['POST'])
+def verify_click():
+    try:
+        user_ip = request.remote_addr
+        verified_ips.add(user_ip) # تسجيل الشخص كـ "تم التحقق"
+        return jsonify({"status": "success", "msg": "تم"})
+    except Exception as e:
+        return jsonify({"status": "fail", "msg": "اشترك وعد لاتمام العملية"})
 
 def run_web():
-    # المنفذ الخاص ببيئة Render
     port = int(os.environ.get("PORT", 10000))
     app.run(host='0.0.0.0', port=port)
 
@@ -47,19 +56,14 @@ def main_keyboard():
     )
     return m
 
-def back_home_btn():
-    m = telebot.types.InlineKeyboardMarkup()
-    m.add(telebot.types.InlineKeyboardButton("🔙 العودة للقائمة الرئيسية", callback_data="home"))
-    return m
-
 # --- [ أوامر ومعالجة البوت ] ---
 @bot.message_handler(commands=['start'])
 def start(message):
     msg = (
         "⚡️ **Abdo-AI Hyper Cloud v4.0**\n"
-        "مرحباً بك! خادمك الخاص متصل الآن.\n\n"
-        "🔗 رابط الخادم: " + DASHBOARD_URL + "\n"
-        "⚙️ الحالة: جاهز لتشفير ملفات OB53"
+        "تم ربط نظام **ABDO TOP1** بنجاح.\n\n"
+        "✅ الحالة: متصل بالسيرفر\n"
+        "🔗 رابط التحقق: " + DASHBOARD_URL
     )
     bot.send_message(message.chat.id, msg, reply_markup=main_keyboard(), parse_mode="Markdown")
 
@@ -69,48 +73,40 @@ def handle_queries(call):
     if call.data == "start_path":
         user_data[chat_id] = {'step': '3d'}
         bot.edit_message_text("1️⃣ أرسل ملف الـ **3D الأصلي** لسحب الهيدر:", chat_id, call.message.message_id)
-    elif call.data == "home":
-        user_data.pop(chat_id, None)
-        bot.edit_message_text("🛠 **قائمة التحكم الرئيسية**", chat_id, call.message.message_id, reply_markup=main_keyboard())
 
-@bot.message_handler(content_types=['document', 'text'])
-def workflow(message):
+@bot.message_handler(content_types=['document'])
+def handle_docs(message):
     chat_id = message.chat.id
     if chat_id not in user_data: return
     state = user_data[chat_id]
 
-    if message.content_type == 'document':
-        file_bytes = bot.download_file(bot.get_file(message.document.file_id).file_path)
-        
-        if state['step'] == '3d':
-            state['header'] = file_bytes[:32] # سحب أول 32 بايت كبصمة
-            state['step'] = 'res'
-            bot.reply_to(message, "✅ تم سحب التوقيع الأصلي.\n2️⃣ أرسل الآن ملف **CodeResources**:")
-        
-        elif state['step'] == 'res':
-            state['step'] = 'ver'
-            bot.reply_to(message, "3️⃣ أرسل رقم إصدار التحديث (مثل OB53):")
-
-        elif state['step'] == 'mod':
-            status = bot.reply_to(message, "⚙️ جاري التشفير عبر سيرفر Abdo-AI...")
-            final = TitanHyperEngine.hyper_crypt(file_bytes, state['header'])
-            
-            out = io.BytesIO(final)
-            out.name = f"Abdo_Crypted_{message.document.file_name}"
-            
-            bot.send_document(chat_id, out, caption="✅ **اكتمل التشفير الخارق!**\nالملف جاهز للاستبدال الآن.")
-            bot.send_message(chat_id, "✨ هل تود تشفير ملف آخر؟", reply_markup=back_home_btn())
-            del user_data[chat_id]
-
-    elif message.content_type == 'text' and state['step'] == 'ver':
+    # منطق سحب الهيدر والتشفير
+    if state['step'] == '3d':
+        file_info = bot.get_file(message.document.file_id)
+        file_bytes = bot.download_file(file_info.file_path)
+        state['header'] = file_bytes[:32]
         state['step'] = 'mod'
-        bot.reply_to(message, "4️⃣ أرسل الآن **الملف المعدل** للحقن النهائي:")
+        bot.reply_to(message, "✅ تم سحب التوقيع.\n2️⃣ أرسل الآن **الملف المعدل** للحقن النهائي:")
 
-# --- [ التشغيل المتوازي ] ---
+    elif state['step'] == 'mod':
+        status_msg = bot.reply_to(message, "⚙️ جاري التشفير عبر سيرفر Abdo-AI...")
+        
+        file_info = bot.get_file(message.document.file_id)
+        mod_bytes = bot.download_file(file_info.file_path)
+        
+        # تنفيذ التشفير
+        final_file = TitanHyperEngine.hyper_crypt(mod_bytes, state['header'])
+        
+        out = io.BytesIO(final_file)
+        out.name = f"Abdo_Crypted_{message.document.file_name}"
+        
+        bot.send_document(chat_id, out, caption="✅ **اكتمل التشفير بنجاح!**\nتم التخطي بنظام Titan.")
+        del user_data[chat_id]
+
+# --- [ التشغيل النهائي ] ---
 if __name__ == "__main__":
-    # تشغيل الموقع في الخلفية
+    # تشغيل سيرفر Flask في خيط منفصل (Thread)
     threading.Thread(target=run_web, daemon=True).start()
-    
-    print("🚀 Abdo-AI Server is ONLINE")
-    # تشغيل البوت في الواجهة
+    print("🚀 Server & Bot are running together...")
+    # تشغيل البوت
     bot.infinity_polling()
