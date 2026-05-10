@@ -3,114 +3,153 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ABDO TOP1 | Dashboard</title>
+    <title>ABDO TOP1 | Dynamic System</title>
     <style>
-        :root {
-            --glow-color: #00ff41;
-            --bg-color: #050505;
-        }
+        :root { --spacing: 1.05mm; }
 
         body {
-            background-color: var(--bg-color);
-            color: white;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            background: #000;
+            overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            margin: 0;
-            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
         }
 
-        /* حاوية اللوحة العائمة */
-        .dashboard-card {
-            background: rgba(26, 26, 26, 0.9);
-            border: 2px solid var(--glow-color);
-            padding: 40px;
-            border-radius: 20px;
+        canvas { position: absolute; top: 0; left: 0; z-index: -1; }
+
+        .card {
+            background: rgba(5, 5, 5, 0.9);
+            border: 1px solid rgba(0, 255, 65, 0.3);
+            padding: 35px;
+            border-radius: 25px;
             text-align: center;
-            box-shadow: 0 0 30px rgba(0, 255, 65, 0.3), inset 0 0 15px rgba(0, 255, 65, 0.1);
-            backdrop-filter: blur(10px);
-            animation: float 4s ease-in-out infinite; /* تأثير الطفو */
-            max-width: 400px;
-            width: 90%;
+            box-shadow: 0 0 40px rgba(0, 255, 65, 0.1);
+            width: 320px;
+            backdrop-filter: blur(15px);
+            z-index: 10;
         }
 
-        /* اسمك المتوهج */
-        h1 {
-            color: var(--glow-color);
-            font-size: 35px;
-            margin-bottom: 10px;
-            text-shadow: 0 0 10px var(--glow-color), 0 0 20px var(--glow-color);
-            letter-spacing: 3px;
+        /* توهج الاسم: انتقال سلس وبطيء بين الأخضر والأزرق والألوان الأساسية */
+        .wave-name {
+            font-size: 26px;
+            font-weight: 900;
+            white-space: nowrap;
+            display: block;
+            margin-bottom: 30px;
+            animation: waveMotion 3s ease-in-out infinite, smoothGlow 4s linear infinite;
+            text-shadow: 0 0 20px currentColor;
         }
 
-        .status-text {
-            color: #888;
-            font-size: 14px;
-            margin-bottom: 25px;
-            font-family: 'Courier New', monospace;
-        }
-
-        /* الأزرار المتوهجة */
-        .btn {
-            display: inline-block;
-            padding: 12px 30px;
-            border: 1px solid var(--glow-color);
-            color: var(--glow-color);
-            text-decoration: none;
-            border-radius: 50px;
-            font-weight: bold;
-            transition: 0.4s;
-            box-shadow: 0 0 10px rgba(0, 255, 65, 0.2);
-            margin: 5px;
-        }
-
-        .btn:hover {
-            background: var(--glow-color);
-            color: black;
-            box-shadow: 0 0 25px var(--glow-color);
-            transform: scale(1.05);
-        }
-
-        /* تأثير الحركة العائمة */
-        @keyframes float {
+        @keyframes waveMotion {
             0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-20px); }
+            50% { transform: translateY(-10px); }
         }
 
-        /* الدوائر المتوهجة في الخلفية */
-        .bg-glow {
-            position: absolute;
-            width: 300px;
-            height: 300px;
-            background: radial-gradient(circle, rgba(0, 255, 65, 0.1) 0%, transparent 70%);
-            z-index: -1;
-            filter: blur(50px);
-            animation: pulse 6s infinite;
+        @keyframes smoothGlow {
+            0% { color: #00ff41; }      /* أخضر فاتح */
+            25% { color: #0080ff; }     /* أزرق فاتح */
+            50% { color: #000080; }     /* أزرق غامق */
+            75% { color: #004d1a; }     /* أخضر غامق */
+            100% { color: #00ff41; }    /* العودة للأخضر */
         }
 
-        @keyframes pulse {
-            0%, 100% { opacity: 0.5; transform: scale(1); }
-            50% { opacity: 0.8; transform: scale(1.2); }
+        .btn {
+            display: block;
+            padding: 14px;
+            margin: var(--spacing);
+            border: 1px solid #00ff41;
+            color: #00ff41;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 13px;
+            transition: 0.4s;
+            background: rgba(0, 255, 65, 0.02);
+            text-transform: uppercase;
         }
+
+        .btn:hover { background: #00ff41; color: #000; box-shadow: 0 0 30px #00ff41; }
+
+        .tiktok-style { border-color: #ff0050; color: #ff0050; }
+        .tiktok-style:hover { background: #ff0050; color: #fff; box-shadow: 0 0 30px #ff0050; }
+
+        #verify-log {
+            font-size: 11px;
+            color: #888;
+            margin-bottom: 20px;
+            min-height: 15px;
+            font-weight: bold;
+        }
+
+        #bot-access { display: none; transform: scale(0.9); transition: 0.5s; }
+        .show-bot { display: block !important; transform: scale(1) !important; }
     </style>
 </head>
 <body>
-    <div class="bg-glow"></div>
-    
-    <div class="dashboard-card">
-        <h1>ABDO TOP1</h1>
-        <div class="status-text">
-            [ SERVER STATUS: ONLINE ]<br>
-            [ HYPER ENGINE ACTIVE ]
+
+    <canvas id="starfield"></canvas>
+
+    <div class="card">
+        <div class="wave-name">ABDO TOP1</div>
+        <div id="verify-log">نظام الحماية: بانتظار التحقق...</div>
+
+        <a href="https://www.tiktok.com/@kaniki953?_r=1&_t=ZN-96Fri98ignG" 
+           target="_blank" 
+           class="btn tiktok-style" 
+           onclick="runRealVerification()">
+           اضغط للاشتراك في تيك توك
+        </a>
+
+        <div id="bot-access">
+            <a href="https://t.me/AllFileFFOB53bot" class="btn">تم التحقق بنجاح ✅ دخول</a>
         </div>
-        
-        <p style="color: #fff; font-size: 13px;">مرحباً بك في لوحة تحكم خادمك الشخصي. الخادم الآن يعمل على الرابط الرسمي.</p>
-        
-        <a href="https://t.me/8617254929" class="btn">تواصل مع البوت</a>
-        <a href="https://abdo-ai.onrender.com/" class="btn">تحديث اللوحة</a>
     </div>
 
-</body>
-</html>
+    <script>
+        // كود النجوم
+        const canvas = document.getElementById("starfield");
+        const ctx = canvas.getContext("2d");
+        let stars = [];
+        const numStars = 300;
+
+        function initStars() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            stars = [];
+            for (let i = 0; i < numStars; i++) {
+                stars.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, z: Math.random() * canvas.width, size: 1.2 });
+            }
+        }
+
+        function drawStars() {
+            ctx.fillStyle = "black";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "white";
+            for (let i = 0; i < numStars; i++) {
+                let star = stars[i];
+                let x = (star.x - canvas.width / 2) * (canvas.width / star.z) + canvas.width / 2;
+                let y = (star.y - canvas.height / 2) * (canvas.width / star.z) + canvas.height / 2;
+                ctx.beginPath(); ctx.arc(x, y, star.size * (canvas.width / star.z), 0, Math.PI * 2); ctx.fill();
+                star.z -= 2; if (star.z <= 0) star.z = canvas.width;
+            }
+            requestAnimationFrame(drawStars);
+        }
+        initStars(); drawStars();
+
+        // وظيفة التحقق التفاعلية
+        function runRealVerification() {
+            const log = document.getElementById('verify-log');
+            const botBtn = document.getElementById('bot-access');
+            
+            log.innerHTML = "⏳ جاري فحص الاشتراك في السيرفر...";
+            log.style.color = "#ffcc00";
+
+            fetch('/verify_click', { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === "success") {
+                    setTimeout(() => {
+                        log
